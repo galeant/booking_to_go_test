@@ -1,0 +1,14 @@
+# .air.toml
+root = "."
+tmp_dir = "tmp"
+
+[build]
+cmd = "go build -o ./tmp/main ./cmd/main.go"
+bin = "tmp/main"
+full_bin = ""
+
+[run]
+cmd = "./tmp/main"
+
+[log]
+time = true
