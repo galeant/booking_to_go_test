@@ -1,8 +1,7 @@
 package middleware
 
 import (
-	"fmt"
-	"net/http"
+	"latihan/common"
 	"os"
 	"strings"
 
@@ -14,7 +13,7 @@ func JWTAuth() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		tokenStr := strings.TrimPrefix(c.GetHeader("Authorization"), "Bearer ")
 		if tokenStr == "" {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Missing token"})
+			common.ErrorResponse(c, gin.H{"error": "Missing token"}, 401)
 			return
 		}
 
@@ -23,17 +22,14 @@ func JWTAuth() gin.HandlerFunc {
 		})
 
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
+			common.ErrorResponse(c, gin.H{"error": "Invalid token"}, 401)
 			return
 		}
 
-		if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-			c.Set("user_id", claims["user_id"])
-			fmt.Println(claims)
+		if _, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 			c.Next()
 		} else {
-			fmt.Println("qwd")
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Invalid token", "detail": err.Error()})
+			common.ErrorResponse(c, gin.H{"error": "Invalid token"}, 401)
 		}
 	}
 }

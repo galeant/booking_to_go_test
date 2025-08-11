@@ -5,7 +5,6 @@ import (
 	"latihan/common"
 	"latihan/config"
 	"latihan/internal/user"
-	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
@@ -13,7 +12,7 @@ import (
 func RegisterHandler(c *gin.Context) {
 	var req RegisterRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Error Validation"})
+		common.ErrorValidation(c, err)
 		return
 	}
 
@@ -21,14 +20,14 @@ func RegisterHandler(c *gin.Context) {
 	var count int64
 	config.DB.Model(&user.User{}).Where("email = ?", req.Email).Count(&count)
 	if count > 0 {
-		common.ErrorResponse(c, "Email already exists", 422)
+		common.ErrorResponse(c, []string{"Email already exists"}, 422)
 		return
 	}
 
 	ip := c.GetHeader("X-Forwarded-For")
-	newUser, err := Register(req.Email, req.Password, req.Name, ip)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	newUser, errRegister := Register(req.Email, req.Password, req.Name, ip)
+	if errRegister != nil {
+		common.ErrorResponse(c, errRegister.Error(), 500)
 		return
 	}
 
@@ -42,18 +41,20 @@ func RegisterHandler(c *gin.Context) {
 
 func LoginHandler(c *gin.Context) {
 	var req LoginRequest
-
-	if err := c.ShouldBindJSON(&req); err != nil { // validasi input
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid input"})
-		return
-	}
-	token, err := Login(req.Email, req.Password)
-	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+	if err := c.ShouldBindJSON(&req); err != nil {
+		common.ErrorValidation(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"token": token})
+	token, errLogin := Login(req.Email, req.Password)
+	if errLogin != nil {
+		common.ErrorResponse(c, errLogin.Error(), 500)
+		return
+	}
+
+	common.SuccessResponse(c, map[string]any{
+		"token": token,
+	})
 }
 
 func TestAja(c *gin.Context) {
