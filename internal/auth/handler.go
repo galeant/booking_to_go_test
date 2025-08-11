@@ -2,6 +2,8 @@ package auth
 
 import (
 	"fmt"
+	"latihan/common"
+	"latihan/config"
 	"latihan/internal/user"
 	"net/http"
 
@@ -14,12 +16,28 @@ func RegisterHandler(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Error Validation"})
 		return
 	}
-	newUser, err := user.Register(req.Email, req.Password, req.Name)
+
+	// Validate unique email
+	var count int64
+	config.DB.Model(&user.User{}).Where("email = ?", req.Email).Count(&count)
+	if count > 0 {
+		common.ErrorResponse(c, "Email already exists", 422)
+		return
+	}
+
+	ip := c.GetHeader("X-Forwarded-For")
+	newUser, err := Register(req.Email, req.Password, req.Name, ip)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"message": "register success", "user": newUser})
+
+	res := map[string]any{
+		"id":    newUser.ID,
+		"name":  newUser.Name,
+		"email": newUser.Email,
+	}
+	common.SuccessResponse(c, res)
 }
 
 func LoginHandler(c *gin.Context) {

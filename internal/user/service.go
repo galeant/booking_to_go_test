@@ -17,19 +17,15 @@ func Register(email, password, name string) (*User, error) {
 		Email:    email,
 		Password: hasedPassword,
 		Name:     name,
+		Type:     Admin, // Default user type is Admin
 	}
 
 	createUser := tx.Create(user)
-	createBook := tx.Create(&Book{})
 
 	var err error
-	if createUser.Error != nil || createBook.Error != nil {
+	if createUser.Error != nil {
 		tx.Rollback()
-		if createUser.Error != nil {
-			err = createUser.Error
-		} else {
-			err = createBook.Error
-		}
+		err = createUser.Error
 		return nil, err
 	}
 

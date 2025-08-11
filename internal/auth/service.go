@@ -29,3 +29,32 @@ func Login(email, password string) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	return token.SignedString([]byte(os.Getenv("JWT_SECRET")))
 }
+
+func Register(email, password, name, ip string) (*user.User, error) {
+	tx := config.DB.Begin()
+	if tx.Error != nil {
+		return nil, tx.Error
+	}
+	hasedPassword, _ := hash.Encrypt(password)
+	user := &user.User{
+		Email:     email,
+		Password:  hasedPassword,
+		Name:      name,
+		IPAddress: ip,
+	}
+
+	createUser := tx.Create(user)
+
+	var err error
+	if createUser.Error != nil {
+		tx.Rollback()
+		err = createUser.Error
+		return nil, err
+	}
+
+	if err := tx.Commit().Error; err != nil {
+		return nil, err
+	}
+	return user, nil
+
+}
