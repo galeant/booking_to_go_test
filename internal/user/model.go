@@ -12,14 +12,15 @@ const (
 )
 
 type User struct {
-	ID        int        `json:"id"`
-	Name      string     `json:"cst_name"`
-	DOB       time.TIme  `json:"cst_dob"`
-	Phone     string     `json:"cst_phone"`
-	Email     string     `json:"cst_email"`
-	CreatedAt time.Time  `json:"created_at" gorm:"autoCreateTime"`
-	UpdatedAt time.Time  `json:"updated_at" gorm:"autoUpdateTime"`
-	DeletedAt *time.Time `json:"deleted_at" gorm:"default:null"`
+	ID        int          `json:"id" validate:"required"`
+	Name      string       `json:"cst_name" validate:"required"`
+	DOB       time.TIme    `json:"cst_dob" validate:"required"`
+	Phone     string       `json:"cst_phone" validate:"required"`
+	Email     string       `json:"cst_email" validate:"required"`
+	CreatedAt time.Time    `json:"created_at" gorm:"autoCreateTime"`
+	UpdatedAt time.Time    `json:"updated_at" gorm:"autoUpdateTime"`
+	DeletedAt *time.Time   `json:"deleted_at" gorm:"default:null"`
+	Family    []UserFamily `gorm:"foreignKey:UserID" json:"families"`
 }
 
 type UserFamily struct {
