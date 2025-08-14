@@ -3,8 +3,9 @@ package main
 import (
 	"latihan/config"
 	"latihan/routes"
+	"net/http"
 
-	"github.com/gin-gonic/gin"
+	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 )
 
@@ -14,7 +15,7 @@ func main() {
 	// config.DB.AutoMigrate(&user.User{})
 	// seedDummyUser()
 
-	r := gin.Default()
+	r := mux.NewRouter()
 	routes.RegisterRoutes(r)
-	r.Run(":8000")
+	http.ListenAndServe(":8080", r)
 }

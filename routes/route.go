@@ -1,31 +1,17 @@
 package routes
 
 import (
-	"latihan/internal/auth"
-	"latihan/internal/middleware"
+	"latihan/internal/user"
 
-	"github.com/gin-gonic/gin"
+	"github.com/gorilla/mux"
 )
 
-func RegisterRoutes(r *gin.Engine) {
+func RegisterRoutes(r *mux.Router) {
 
+	r.HandleFunc("/user", user.GetListHandler).Methods("GET")
+	r.HandleFunc("/user/{id}", user.GetDetailHandler).Methods("GET")
+	r.HandleFunc("/user/create", user.CreateHandler).Methods("POST")
+	r.HandleFunc("/user/update/{id}", user.UpdateHandler).Methods("POST")
+	r.HandleFunc("/user/delete/{id}", user.DeleteHandler).Methods("DELETE")
 	// r.GET("/test", auth.TestAja)
-
-	r.POST("/login", auth.LoginHandler)
-	r.POST("/register", auth.RegisterHandler)
-
-	r.GET("/hello", middleware.JWTAuth(), auth.Hello)
-
-	// Contoh penggunaan group dan middleware
-	// authGroup := r.Group("/user")
-	// authGroup.Use(middleware.JWTAuth())
-	// {
-	// 	authGroup.GET("/profile", user.GetProfileHandler)
-	// }
-
-	// authGroup := r.Group("/user")
-	// authGroup.Use(middleware.JWTAuth())
-	// {
-	// 	authGroup.GET("/profile", user.GetProfileHandler)
-	// }
 }

@@ -2,21 +2,32 @@ package user
 
 import "time"
 
-type UserType string
+type FamilyRelation string
 
 const (
-	Admin  UserType = "admin"
-	Member UserType = "member"
+	Ayah    FamilyRelation = "ayah"
+	Ibu     FamilyRelation = "ibu"
+	Anak    FamilyRelation = "anak"
+	Saudara FamilyRelation = "saudara"
 )
 
 type User struct {
 	ID        int        `json:"id"`
-	Email     string     `json:"email"`
-	Password  string     `json:"_"`
-	Name      string     `json:"name"`
-	Type      UserType   `json:"user_type" gorm:"type:enum('admin','member');default:'member'"`
-	IPAddress string     `json:"ip_address"`
-	LastLogin *time.Time `json:"last_login" gorm:"default:null"`
+	Name      string     `json:"cst_name"`
+	DOB       time.TIme  `json:"cst_dob"`
+	Phone     string     `json:"cst_phone"`
+	Email     string     `json:"cst_email"`
+	CreatedAt time.Time  `json:"created_at" gorm:"autoCreateTime"`
+	UpdatedAt time.Time  `json:"updated_at" gorm:"autoUpdateTime"`
+	DeletedAt *time.Time `json:"deleted_at" gorm:"default:null"`
+}
+
+type UserFamily struct {
+	ID        int        `json:"id"`
+	UserID    uint       `json:"cost_id"` // foreign key
+	Name      string     `json:"fl_name"`
+	Relation  string     `json:"fl_relation"` // contoh: "Ayah", "Ibu", "Anak"
+	DOB       time.Time  `json:"fl_dob"`
 	CreatedAt time.Time  `json:"created_at" gorm:"autoCreateTime"`
 	UpdatedAt time.Time  `json:"updated_at" gorm:"autoUpdateTime"`
 	DeletedAt *time.Time `json:"deleted_at" gorm:"default:null"`
