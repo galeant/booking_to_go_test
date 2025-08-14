@@ -1,0 +1,9 @@
+services:
+  app:
+    build: .
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8080"   # port aplikasi kamu
+      - "40000:40000" # port dlv debugger
+    command: air
