@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"latihan/common"
 	"net/http"
-	"os/user"
 
 	"strconv"
 )
@@ -86,11 +85,11 @@ func CreateHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := Validate.Struct(user); err != nil {
-		fmt.Println(err)
-		common.ErrorValidationMux(w, err)
-		return
-	}
+	// if err := Validate.Struct(user); err != nil {
+	// 	fmt.Println(err)
+	// 	common.ErrorValidationMux(w, err)
+	// 	return
+	// }
 
 	// Contoh: cetak data ke terminal
 	fmt.Printf("Name: %s, Email: %s\n", user.Name, user.Email)
@@ -107,17 +106,17 @@ func CreateHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func UpdateHandler(w http.ResponseWriter, r *http.Request) {
-	var req user.User
+	// var req user.User
 
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
+	// if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+	// 	http.Error(w, err.Error(), http.StatusBadRequest)
+	// 	return
+	// }
 
-	if err := validate.Struct(req); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
+	// if err := validate.Struct(req); err != nil {
+	// 	http.Error(w, err.Error(), http.StatusBadRequest)
+	// 	return
+	// }
 }
 
 func DeleteHandler(w http.ResponseWriter, r *http.Request) {

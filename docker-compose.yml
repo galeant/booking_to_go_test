@@ -1,9 +1,12 @@
 services:
-  app:
-    build: .
-    volumes:
-      - .:/app
+  postgres:
+    image: postgres:16
+    container_name: postgres_container
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: pgsql
+      POSTGRES_PASSWORD: pgsql
     ports:
-      - "8000:8080"   # port aplikasi kamu
-      - "40000:40000" # port dlv debugger
-    command: air
+      - "5432:5432"
+    volumes:
+      - /home/ilham/dev/docker/pgsql:/var/lib/postgresql/data
