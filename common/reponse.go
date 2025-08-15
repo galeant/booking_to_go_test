@@ -1,8 +1,11 @@
 package common
 
 import (
+	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
@@ -39,12 +42,67 @@ func ErrorValidation(c *gin.Context, err error) {
 }
 
 func fieldErrorToString(fe validator.FieldError) string {
+	field := fe.Field()
 	switch fe.Tag() {
 	case "required":
-		return fe.Field() + " is required"
+		return field + " is required"
 	case "email":
-		return fe.Field() + " must be a valid email"
+		return field + " must be a valid email"
 	default:
-		return fe.Field() + " is invalid"
+		return field + " is invalid"
 	}
+}
+
+func ErrorValidationMux(w http.ResponseWriter, err error) {
+	validationErrors := make(map[string]string)
+	for _, e := range err.(validator.ValidationErrors) {
+		fmt.Println(e)
+		fielName := pathValidationSanitize(e.StructNamespace())
+		validationErrors[fielName] = fieldErrorToString(e)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(422)
+	json.NewEncoder(w).Encode(map[string]any{
+		"data":    nil,
+		"message": "Error validation",
+		"errors":  validationErrors,
+	})
+}
+
+func pathValidationSanitize(path string) string {
+	path = strings.ReplaceAll(path, "[", ".")
+	path = strings.ReplaceAll(path, "]", "")
+	path = strings.ToLower(path)
+	if idx := strings.Index(path, "."); idx != -1 {
+		path = path[idx+1:]
+	}
+	return path
+}
+
+func SuccessResponseMux(w http.ResponseWriter, data any, reponseCode int) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(reponseCode)
+	json.NewEncoder(w).Encode(map[string]any{
+		"data":    data,
+		"message": "Success",
+		"errors":  nil,
+	})
+}
+
+func ErrorResponseMux(w http.ResponseWriter, err error, message string, reponseCode int) {
+	if message == "" {
+		message = "Fatal Error"
+	}
+
+	if reponseCode == 0 {
+		reponseCode = 500
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(reponseCode)
+	json.NewEncoder(w).Encode(map[string]any{
+		"data":    nil,
+		"message": message,
+		"errors":  err.Error(),
+	})
 }

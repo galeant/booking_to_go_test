@@ -1,6 +1,9 @@
 package user
 
-import "time"
+import (
+	"latihan/common"
+	"time"
+)
 
 type FamilyRelation string
 
@@ -12,24 +15,24 @@ const (
 )
 
 type User struct {
-	ID        int          `json:"id" validate:"required"`
-	Name      string       `json:"cst_name" validate:"required"`
-	DOB       time.TIme    `json:"cst_dob" validate:"required"`
-	Phone     string       `json:"cst_phone" validate:"required"`
-	Email     string       `json:"cst_email" validate:"required"`
-	CreatedAt time.Time    `json:"created_at" gorm:"autoCreateTime"`
-	UpdatedAt time.Time    `json:"updated_at" gorm:"autoUpdateTime"`
-	DeletedAt *time.Time   `json:"deleted_at" gorm:"default:null"`
-	Family    []UserFamily `gorm:"foreignKey:UserID" json:"families"`
+	ID        int             `json:"id" gorm:"primaryKey"`
+	Name      string          `json:"name" validate:"required" gorm:"column:cst_name"`
+	DOB       common.DateOnly `json:"dob" validate:"required" gorm:"column:cst_dob"`
+	Phone     string          `json:"phone" validate:"required" gorm:"column:cst_phone"`
+	Email     string          `json:"email" validate:"required" gorm:"column:cst_email"`
+	CreatedAt time.Time       `json:"created_at" gorm:"autoCreateTime"`
+	UpdatedAt time.Time       `json:"updated_at" gorm:"autoUpdateTime"`
+	DeletedAt *time.Time      `json:"deleted_at" gorm:"default:null"`
+	Family    []UserFamily    `gorm:"foreignKey:UserID" json:"families" validate:"required,dive"`
 }
 
 type UserFamily struct {
-	ID        int        `json:"id"`
-	UserID    uint       `json:"cost_id"` // foreign key
-	Name      string     `json:"fl_name"`
-	Relation  string     `json:"fl_relation"` // contoh: "Ayah", "Ibu", "Anak"
-	DOB       time.Time  `json:"fl_dob"`
-	CreatedAt time.Time  `json:"created_at" gorm:"autoCreateTime"`
-	UpdatedAt time.Time  `json:"updated_at" gorm:"autoUpdateTime"`
-	DeletedAt *time.Time `json:"deleted_at" gorm:"default:null"`
+	ID        int             `json:"id" gorm:"primaryKey"`
+	UserID    uint            `json:"-" gorm:"column:user_id"`
+	Name      string          `json:"name" validate:"required" gorm:"column:fl_name"`
+	Relation  string          `json:"relation" validate:"required" gorm:"column:fl_relation"`
+	DOB       common.DateOnly `json:"dob" validate:"required" gorm:"column:fl_dob"`
+	CreatedAt time.Time       `json:"created_at" gorm:"autoCreateTime"`
+	UpdatedAt time.Time       `json:"updated_at" gorm:"autoUpdateTime"`
+	DeletedAt *time.Time      `json:"deleted_at" gorm:"default:null"`
 }

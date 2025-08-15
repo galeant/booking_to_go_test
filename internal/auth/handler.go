@@ -1,33 +1,33 @@
 package auth
 
 // func RegisterHandler(c *gin.Context) {
-// var req RegisterRequest
-// if err := c.ShouldBindJSON(&req); err != nil {
-// 	common.ErrorValidation(c, err)
-// 	return
-// }
+// 	var req RegisterRequest
+// 	if err := c.ShouldBindJSON(&req); err != nil {
+// 		common.ErrorValidation(c, err)
+// 		return
+// 	}
 
-// // Validate unique email
-// var count int64
-// config.DB.Model(&user.User{}).Where("email = ?", req.Email).Count(&count)
-// if count > 0 {
-// 	common.ErrorResponse(c, []string{"Email already exists"}, 422)
-// 	return
-// }
+// 	// Validate unique email
+// 	var count int64
+// 	config.DB.Model(&user.User{}).Where("email = ?", req.Email).Count(&count)
+// 	if count > 0 {
+// 		common.ErrorResponse(c, []string{"Email already exists"}, 422)
+// 		return
+// 	}
 
-// ip := c.GetHeader("X-Forwarded-For")
-// newUser, errRegister := Register(req.Email, req.Password, req.Name, ip)
-// if errRegister != nil {
-// 	common.ErrorResponse(c, errRegister.Error(), 500)
-// 	return
-// }
+// 	ip := c.GetHeader("X-Forwarded-For")
+// 	newUser, errRegister := Register(req.Email, req.Password, req.Name, ip)
+// 	if errRegister != nil {
+// 		common.ErrorResponse(c, errRegister.Error(), 500)
+// 		return
+// 	}
 
-// res := map[string]any{
-// 	"id":    newUser.ID,
-// 	"name":  newUser.Name,
-// 	"email": newUser.Email,
-// }
-// common.SuccessResponse(c, res)
+// 	res := map[string]any{
+// 		"id":    newUser.ID,
+// 		"name":  newUser.Name,
+// 		"email": newUser.Email,
+// 	}
+// 	common.SuccessResponse(c, res)
 // }
 
 // func LoginHandler(c *gin.Context) {
