@@ -1,18 +1,31 @@
 # Database Migration
 
-# .env
+## Migration
+Migration menggunakan Goose, untuk instalasi bisa di lihat pada [Goose Docs](https://github.com/pressly/goose)
+
+### migration up
 ```code
-JWT_SECRET=supersecretjwtkey
+goose up
 ```
 
-## Cara Up Migration
-Menjalankan semua migration yang belum dijalankan:
-
+# migration down
 ```code
-export $(grep -v '^#' .env | xargs) && goose -dir ./migrations mysql "$DB_DSN" up
+goose down
 ```
 
-# cara down
+## Environtment
+Environtment sebagari berikut, bisa dilihat juga di .env.example
+config menyesuaikan masih-masih local
+
 ```code
-export $(grep -v '^#' .env | xargs) && goose -dir ./migrations mysql "$DB_DSN" down
+DB_HOST="127.0.0.1"
+DB_POST="5432"
+DB_USERNAME="pgsql"
+DB_PASSWORD="pgsql"
+DB_NAME="database"
+
+GOOSE_DRIVER=postgres
+GOOSE_DBSTRING=postgres://pgsql:pgsql@localhost:5432/database
+GOOSE_MIGRATION_DIR=./migrations
+GOOSE_TABLE=public.goose_migrations
 ```
