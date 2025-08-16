@@ -12,7 +12,7 @@ type UserService struct {
 
 func (s *UserService) GetData(search string) ([]User, error) {
 	var users []User
-	query := config.DB.Model(&User{})
+	query := config.DB.Model(&User{}).Preload("Family")
 
 	if search != "" {
 		search = "%" + search + "%"
