@@ -8,5 +8,3 @@ services:
       POSTGRES_PASSWORD: pgsql
     ports:
       - "5432:5432"
-    volumes:
-      - /home/ilham/dev/docker/pgsql:/var/lib/postgresql/data
