@@ -1,100 +1,86 @@
 package nationality
 
+import (
+	"errors"
+	"latihan/config"
+
+	"gorm.io/gorm"
+)
+
 type NationalityService struct {
 }
 
-// func (s *NationalityService) GetList(search string, paginate, page int) ([]User, int, error) {
-// 	var users []User
-// 	var total int64
-// 	query := config.DB.Model(&User{})
+func (s *NationalityService) GetList(search string) ([]Nationality, error) {
+	var result []Nationality
+	query := config.DB.Model(&Nationality{})
+	if search != "" {
+		query = query.
+			Where("nationalily_name LIKE ? OR nationality_code LIKE ?", "%"+search+"%", "%"+search+"%")
+	}
 
-// 	if search != "" {
-// 		query = query.
-// 			Where("cst_name LIKE ? OR cst_email LIKE ? OR cst_phone ?", "%"+search+"%", "%"+search+"%", "%"+search+"%")
-// 	}
+	err := query.
+		Find(&result).Error
 
-// 	query.Count(&total)
-// 	err := query.
-// 		Offset((page - 1) * paginate).
-// 		Limit(paginate).
-// 		Find(&users).Error
+	return result, err
+}
 
-// 	totalPages := (int(total) + paginate - 1) / paginate
+func (s *NationalityService) GetDetail(id int) (Nationality, error) {
+	var result Nationality
+	err := config.DB.First(&result, id).Error
+	return result, err
+}
 
-// 	return users, totalPages, err
-// }
-// func (s *NationalityService) GetDetail(id int) (User, error) {
-// 	var user User
-// 	res := config.DB.Where("cst_id = ?", id).First(&user)
+func (s *NationalityService) Create(nationality Nationality) (Nationality, error) {
+	err := config.DB.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Create(&nationality).Error; err != nil {
+			tx.Rollback()
+			return err
+		}
 
-// 	if res.Error != nil {
-// 		return User{}, res.Error
-// 	}
+		return nil
+	})
 
-// 	return user, nil
-// }
+	return nationality, err
+}
 
-// func (s *NationalityService) Create(user User) error {
-// 	tx := config.DB.Begin()
-// 	if tx.Error != nil {
-// 		return tx.Error
-// 	}
+func (s *NationalityService) Update(id int, nationality Nationality) (Nationality, error) {
+	var existing Nationality
+	err := config.DB.Transaction(func(tx *gorm.DB) error {
+		if err := tx.First(&existing, id).Error; err != nil {
+			tx.Rollback()
+			return errors.New("data not found")
+		}
 
-// 	if err := tx.Create(&user).Error; err != nil {
-// 		tx.Rollback() // rollback jika error
-// 		return err
-// 	}
+		existing = nationality
+		existing.ID = id
 
-// 	if err := tx.Commit().Error; err != nil {
-// 		return err
-// 	}
-// 	return nil
-// }
+		if err := tx.Save(&existing).Error; err != nil {
+			tx.Rollback()
+			return err
+		}
 
-// func (s *NationalityService) Update(id int, user User) (User, error) {
-// 	var updatedUser User
-// 	tx := config.DB.Begin()
-// 	if tx.Error != nil {
-// 		return User{}, tx.Error
-// 	}
+		return nil
+	})
 
-// 	if err := tx.First(&updatedUser, id).Error; err != nil {
-// 		tx.Rollback()
-// 		return User{}, err
-// 	}
+	return existing, err
 
-// 	updateFields := map[string]any{
-// 		"nationality_id": user.Nationality,
-// 		"cst_name":       user.Name,
-// 		"cst_dob":        user.DOB,
-// 		"cst_phonenum":   user.Phone,
-// 		"cst_email":      user.Email,
-// 	}
+}
 
-// 	if err := tx.Model(&updatedUser).Where("cst_id = ?", id).Updates(&updateFields).Error; err != nil {
-// 		tx.Rollback()
-// 		return User{}, err
-// 	}
-// 	if err := tx.Commit().Error; err != nil {
-// 		return User{}, err
-// 	}
-// 	return updatedUser, nil
-// }
+func (s *NationalityService) Delete(id int) (Nationality, error) {
+	var result Nationality
+	err := config.DB.Transaction(func(tx *gorm.DB) error {
+		if err := tx.First(&result, id).Error; err != nil {
+			tx.Rollback()
+			return errors.New("data not found")
+		}
 
-// func (s *NationalityService) Delete(id int) (User, error) {
-// 	var user User
-// 	tx := config.DB.Begin()
-// 	tx.First(&user, id)
+		if err := tx.Delete(&result).Error; err != nil {
+			tx.Rollback()
+			return err
+		}
 
-// 	if err := tx.Delete(&user).Error; err != nil {
-// 		tx.Rollback()
-// 		return user, err
-// 	}
+		return nil
+	})
 
-// 	if err := tx.Commit().Error; err != nil {
-// 		return user, err
-// 	}
-
-// 	return user, nil
-
-// }
+	return result, err
+}

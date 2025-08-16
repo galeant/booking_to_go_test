@@ -79,8 +79,5 @@ func (s *FamilyService) Update(userId int, request CreateFamilyRequest) ([]UserF
 		return nil
 	})
 
-	if err != nil {
-		return nil, err
-	}
-	return result, nil
+	return result, err
 }
