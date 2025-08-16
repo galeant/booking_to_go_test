@@ -19,7 +19,7 @@ type User struct {
 	CreatedAt   time.Time       `json:"created_at" gorm:"autoCreateTime"`
 	UpdatedAt   time.Time       `json:"updated_at" gorm:"autoUpdateTime"`
 
-	// Family []family.UserFamily `gorm:"foreignKey:UserID" json:"families" validate:"required,dive"`
+	Family []UserFamily `gorm:"foreignKey:UserID" json:"families" validate:"required,dive"`
 }
 
 type UserCreateRequest struct {
@@ -46,12 +46,16 @@ type Nationality struct {
 	UpdatedAt time.Time `json:"updated_at" gorm:"autoUpdateTime"`
 }
 
+func (UserFamily) TableName() string {
+	return "family_list"
+}
+
 type UserFamily struct {
-	ID        int             `json:"id" gorm:"primaryKey;column:fl_id"`
-	UserID    uint            `json:"-" gorm:"column:cst_id"`
-	Name      string          `json:"name" validate:"required" gorm:"column:fl_name"`
-	Relation  string          `json:"relation" validate:"required,relation" gorm:"column:fl_relation"`
-	DOB       common.DateOnly `json:"dob" validate:"required" gorm:"column:fl_dob"`
-	CreatedAt time.Time       `json:"created_at" gorm:"autoCreateTime"`
-	UpdatedAt time.Time       `json:"updated_at" gorm:"autoUpdateTime"`
+	ID        int       `json:"id" gorm:"primaryKey;column:fl_id"`
+	UserID    uint      `json:"-" gorm:"column:cst_id"`
+	Name      string    `json:"name" validate:"required" gorm:"column:fl_name"`
+	Relation  string    `json:"relation" validate:"required,relation" gorm:"column:fl_relation"`
+	DOB       string    `json:"dob" validate:"required" gorm:"column:fl_dob"`
+	CreatedAt time.Time `json:"created_at" gorm:"autoCreateTime"`
+	UpdatedAt time.Time `json:"updated_at" gorm:"autoUpdateTime"`
 }

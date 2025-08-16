@@ -29,7 +29,7 @@ func (s *UserService) GetData(search string, paginate, page int) ([]User, int, e
 }
 func (s *UserService) GetDetail(id int) (User, error) {
 	var user User
-	res := config.DB.Where("cst_id = ?", id).First(&user)
+	res := config.DB.Where("cst_id = ?", id).Preload("Family").First(&user)
 
 	if res.Error != nil {
 		return User{}, res.Error
