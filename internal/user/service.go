@@ -1,31 +1,29 @@
 package user
 
 import (
+	"errors"
 	"latihan/config"
+
+	"gorm.io/gorm"
 )
 
 type UserService struct {
 }
 
-func (s *UserService) GetData(search string, paginate, page int) ([]User, int, error) {
+func (s *UserService) GetData(search string) ([]User, error) {
 	var users []User
-	// var total int64
 	query := config.DB.Model(&User{})
 
 	if search != "" {
+		search = "%" + search + "%"
 		query = query.
-			Where("cst_name LIKE ? OR cst_email LIKE ? OR cst_phone ?", "%"+search+"%", "%"+search+"%", "%"+search+"%")
+			Where("cst_name ILIKE ? OR cst_email ILIKE ? OR cst_phonenum ILIKE ?", search, search, search)
 	}
 
-	// query.Count(&total)
 	err := query.
-		// Offset((page - 1) * paginate).
-		// Limit(paginate).
 		Find(&users).Error
 
-	// totalPages := (int(total) + paginate - 1) / paginate
-
-	return users, 0, err
+	return users, err
 }
 func (s *UserService) GetDetail(id int) (User, error) {
 	var user User
@@ -39,75 +37,68 @@ func (s *UserService) GetDetail(id int) (User, error) {
 }
 
 func (s *UserService) Create(request UserCreateRequest) (User, error) {
-	tx := config.DB.Begin()
-	if tx.Error != nil {
-		return User{}, tx.Error
-	}
 
-	user := User{
-		Nationality: request.NationalityId,
-		Name:        request.Name,
-		DOB:         request.DOB,
-		Phone:       request.Phone,
-		Email:       request.Email,
-	}
+	var user User
+	err := config.DB.Transaction(func(tx *gorm.DB) error {
 
-	if err := tx.Create(&user).Error; err != nil {
-		tx.Rollback() // rollback jika error
-		return User{}, err
-	}
+		user.Nationality = request.NationalityId
+		user.Name = request.Name
+		user.DOB = request.DOB
+		user.Phone = request.Phone
+		user.Email = request.Email
 
-	if err := tx.Commit().Error; err != nil {
-		return User{}, err
-	}
-	return user, nil
+		if err := tx.Create(&user).Error; err != nil {
+			tx.Rollback()
+			return err
+		}
+
+		return nil
+	})
+
+	return user, err
 }
 
 func (s *UserService) Update(id int, request UserCreateRequest) (User, error) {
 	var user User
-	tx := config.DB.Begin()
-	if tx.Error != nil {
-		return User{}, tx.Error
-	}
+	err := config.DB.Transaction(func(tx *gorm.DB) error {
+		if err := tx.First(&user, id).Error; err != nil {
+			tx.Rollback()
+			return errors.New("user not found")
+		}
+		user.ID = id
+		user.Nationality = request.NationalityId
+		user.Name = request.Name
+		user.DOB = request.DOB
+		user.Phone = request.Phone
+		user.Email = request.Email
 
-	if err := tx.First(&user, id).Error; err != nil {
-		tx.Rollback()
-		return User{}, err
-	}
+		if err := tx.Save(&user).Error; err != nil {
+			tx.Rollback()
+			return err
+		}
 
-	user = User{
-		ID:          user.ID,
-		Nationality: request.NationalityId,
-		Name:        request.Name,
-		DOB:         request.DOB,
-		Phone:       request.Phone,
-		Email:       request.Email,
-	}
+		return nil
+	})
 
-	if err := tx.Save(&user).Error; err != nil {
-		tx.Rollback()
-		return User{}, err
-	}
-	if err := tx.Commit().Error; err != nil {
-		return User{}, err
-	}
-	return user, nil
+	return user, err
 }
 
 func (s *UserService) Delete(id int) (User, error) {
 	var user User
-	tx := config.DB.Begin()
-	tx.First(&user, id)
+	err := config.DB.Transaction(func(tx *gorm.DB) error {
+		if err := tx.First(&user, id).Error; err != nil {
+			tx.Rollback()
+			return errors.New("data not found")
+		}
 
-	if err := tx.Delete(&user).Error; err != nil {
-		tx.Rollback()
-		return user, err
-	}
+		if err := tx.Delete(&user).Error; err != nil {
+			tx.Rollback()
+			return err
+		}
 
-	if err := tx.Commit().Error; err != nil {
-		return user, err
-	}
+		return nil
+	})
 
-	return user, nil
+	return user, err
 
 }

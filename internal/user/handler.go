@@ -19,33 +19,29 @@ type UserHandler struct {
 
 func (h *UserHandler) GetUsers(w http.ResponseWriter, r *http.Request) {
 	search := r.URL.Query().Get("search")
-	paginateParam := r.URL.Query().Get("paginate")
-	pageParam := r.URL.Query().Get("page")
+	// paginateParam := r.URL.Query().Get("paginate")
+	// pageParam := r.URL.Query().Get("page")
 
-	paginate := 10
-	page := 1
+	// paginate := 10
+	// page := 1
 
-	if val, err := strconv.Atoi(paginateParam); err == nil && val > 0 {
-		paginate = val
-	}
-	if val, err := strconv.Atoi(pageParam); err == nil && val > 0 {
-		page = val
-	}
+	// if val, err := strconv.Atoi(paginateParam); err == nil && val > 0 {
+	// 	paginate = val
+	// }
+	// if val, err := strconv.Atoi(pageParam); err == nil && val > 0 {
+	// 	page = val
+	// }
 
-	users, _, err := h.Service.GetData(search, paginate, page)
+	users, err := h.Service.GetData(search)
 	if err != nil {
 		common.ErrorResponseMux(w, err, "Error Get Data", 500)
 		return
 	}
-	common.SuccessResponseMux(w, map[string]any{
-		"users": users,
-		// "total_data": total,
-	}, "", 200)
+	common.SuccessResponseMux(w, users, "", 200)
 }
 
 func (h *UserHandler) GetDetail(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r) // Ambil semua parameter URL
-	id := vars["id"]
+	id := mux.Vars(r)["id"]
 
 	idInt, err := strconv.Atoi(id)
 	if err != nil {
@@ -73,7 +69,6 @@ func (h *UserHandler) CreateHandler(w http.ResponseWriter, r *http.Request) {
 		common.ErrorValidationMux(w, err)
 		return
 	}
-
 	user, err := h.Service.Create(request)
 	if err != nil {
 		common.ErrorResponseMux(w, err, "Error Create Data", 500)
@@ -83,8 +78,7 @@ func (h *UserHandler) CreateHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *UserHandler) UpdateHandler(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r) // Ambil semua parameter URL
-	id := vars["id"]
+	id := mux.Vars(r)["id"]
 	idInt, err := strconv.Atoi(id)
 	if err != nil {
 		http.Error(w, "Invalid ID", http.StatusBadRequest)
@@ -110,8 +104,7 @@ func (h *UserHandler) UpdateHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *UserHandler) DeleteHandler(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r) // Ambil semua parameter URL
-	id := vars["id"]
+	id := mux.Vars(r)["id"]
 	idInt, err := strconv.Atoi(id)
 	if err != nil {
 		http.Error(w, "Invalid ID", http.StatusBadRequest)

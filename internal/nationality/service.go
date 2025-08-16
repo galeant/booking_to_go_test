@@ -14,8 +14,9 @@ func (s *NationalityService) GetList(search string) ([]Nationality, error) {
 	var result []Nationality
 	query := config.DB.Model(&Nationality{})
 	if search != "" {
+		search = "%" + search + "%"
 		query = query.
-			Where("nationalily_name LIKE ? OR nationality_code LIKE ?", "%"+search+"%", "%"+search+"%")
+			Where("nationality_name ILIKE ? OR nationality_code ILIKE ?", search, search)
 	}
 
 	err := query.
