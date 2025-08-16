@@ -62,7 +62,6 @@ func (h *UserHandler) GetDetail(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *UserHandler) CreateHandler(w http.ResponseWriter, r *http.Request) {
-	validate.RegisterValidation("relation", RelationValidation)
 	var request UserCreateRequest
 
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
@@ -93,7 +92,6 @@ func (h *UserHandler) UpdateHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var request UserCreateRequest
-	validate.RegisterValidation("relation", RelationValidation)
 
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
 		common.ErrorResponseMux(w, err, "Invalid request", 422)

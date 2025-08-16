@@ -3,27 +3,7 @@ package user
 import (
 	"latihan/common"
 	"time"
-
-	"github.com/go-playground/validator/v10"
 )
-
-type FamilyRelation string
-
-const (
-	Ayah    FamilyRelation = "ayah"
-	Ibu     FamilyRelation = "ibu"
-	Anak    FamilyRelation = "anak"
-	Saudara FamilyRelation = "saudara"
-)
-
-func RelationValidation(fl validator.FieldLevel) bool {
-	role := FamilyRelation(fl.Field().String())
-	switch role {
-	case Ayah, Ibu, Anak, Saudara:
-		return true
-	}
-	return false
-}
 
 func (User) TableName() string {
 	return "customer"
@@ -39,7 +19,7 @@ type User struct {
 	CreatedAt   time.Time       `json:"created_at" gorm:"autoCreateTime"`
 	UpdatedAt   time.Time       `json:"updated_at" gorm:"autoUpdateTime"`
 
-	Family []UserFamily `gorm:"foreignKey:UserID" json:"families" validate:"required,dive"`
+	// Family []family.UserFamily `gorm:"foreignKey:UserID" json:"families" validate:"required,dive"`
 }
 
 type UserCreateRequest struct {
@@ -58,8 +38,12 @@ type UserUpdateRequest struct {
 	Email         string          `json:"email" validate:"required"`
 }
 
-func (UserFamily) TableName() string {
-	return "family_list"
+type Nationality struct {
+	ID        int       `json:"id" gorm:"primaryKey;column:nationality_id"`
+	Name      string    `json:"name" validate:"required" gorm:"column:nationality_name"`
+	Code      string    `json:"relation" validate:"required" gorm:"column:nationality_code"`
+	CreatedAt time.Time `json:"created_at" gorm:"autoCreateTime"`
+	UpdatedAt time.Time `json:"updated_at" gorm:"autoUpdateTime"`
 }
 
 type UserFamily struct {
@@ -70,12 +54,4 @@ type UserFamily struct {
 	DOB       common.DateOnly `json:"dob" validate:"required" gorm:"column:fl_dob"`
 	CreatedAt time.Time       `json:"created_at" gorm:"autoCreateTime"`
 	UpdatedAt time.Time       `json:"updated_at" gorm:"autoUpdateTime"`
-}
-
-type Nationality struct {
-	ID        int       `json:"id" gorm:"primaryKey;column:nationality_id"`
-	Name      string    `json:"name" validate:"required" gorm:"column:nationality_name"`
-	Code      string    `json:"relation" validate:"required" gorm:"column:nationality_code"`
-	CreatedAt time.Time `json:"created_at" gorm:"autoCreateTime"`
-	UpdatedAt time.Time `json:"updated_at" gorm:"autoUpdateTime"`
 }

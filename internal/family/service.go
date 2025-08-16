@@ -1,104 +1,86 @@
 package family
 
 import (
+	"errors"
 	"latihan/config"
+	"latihan/internal/user"
+
+	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
-type UserService struct {
+type FamilyService struct {
 }
 
-func (s *UserService) GetData(search string, paginate, page int) ([]User, int, error) {
-	var users []User
-	var total int64
-	query := config.DB.Model(&User{})
+func (s *FamilyService) GetData(userId int) ([]UserFamily, error) {
+	var families []UserFamily
+	var user user.User
 
-	if search != "" {
-		query = query.
-			Where("cst_name LIKE ? OR cst_email LIKE ? OR cst_phone ?", "%"+search+"%", "%"+search+"%", "%"+search+"%")
+	selectedUser := config.DB.Where("cst_id = ?", userId).First(&user)
+	if err := selectedUser.Error; err != nil {
+		return nil, errors.New("user not found")
 	}
 
-	query.Count(&total)
-	err := query.
-		Offset((page - 1) * paginate).
-		Limit(paginate).
-		Find(&users).Error
+	err := config.DB.Model(&UserFamily{}).
+		Where("cst_id = ?", userId).
+		Find(&families).Error
 
-	totalPages := (int(total) + paginate - 1) / paginate
-
-	return users, totalPages, err
-}
-func (s *UserService) GetDetail(id int) (User, error) {
-	var user User
-	res := config.DB.Where("cst_id = ?", id).First(&user)
-
-	if res.Error != nil {
-		return User{}, res.Error
-	}
-
-	return user, nil
+	return families, err
 }
 
-func (s *UserService) Create(user User) error {
-	tx := config.DB.Begin()
-	if tx.Error != nil {
-		return tx.Error
+func (s *FamilyService) Update(userId int, request CreateFamilyRequest) ([]UserFamily, error) {
+	var user user.User
+	selectedUser := config.DB.Where("cst_id = ?", userId).First(&user)
+	if err := selectedUser.Error; err != nil {
+		return nil, errors.New("user not found")
 	}
 
-	if err := tx.Create(&user).Error; err != nil {
-		tx.Rollback() // rollback jika error
-		return err
+	var result []UserFamily
+	err := config.DB.Transaction(func(tx *gorm.DB) error {
+		var insert []UserFamily
+		ids := make([]int, 0)
+		for _, f := range request.Families {
+			insert = append(insert, UserFamily{
+				ID:       f.ID,
+				UserID:   userId,
+				Name:     f.Name,
+				Relation: f.Relation,
+				DOB:      f.DOB,
+			})
+
+			if f.ID != 0 {
+				ids = append(ids, f.ID)
+			}
+		}
+
+		if len(ids) > 0 {
+			if err := tx.Where("cst_id = ? AND fl_id NOT IN ?", userId, ids).Delete(&UserFamily{}).Error; err != nil {
+				return err
+			}
+		} else {
+			if err := tx.Where("cst_id = ?", userId).Delete(&UserFamily{}).Error; err != nil {
+				return err
+			}
+		}
+
+		if len(request.Families) > 0 {
+			if err := tx.Clauses(clause.OnConflict{
+				Columns:   []clause.Column{{Name: "fl_id"}},
+				DoUpdates: clause.AssignmentColumns([]string{"fl_name", "fl_relation", "fl_dob", "cst_id"}),
+			}).Create(insert).Error; err != nil {
+				return err
+			}
+		}
+
+		if err := tx.Where("cst_id = ?", userId).Find(&result).Error; err != nil {
+			return err
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return nil, err
 	}
-
-	if err := tx.Commit().Error; err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *UserService) Update(id int, user User) (User, error) {
-	var updatedUser User
-	tx := config.DB.Begin()
-	if tx.Error != nil {
-		return User{}, tx.Error
-	}
-
-	if err := tx.First(&updatedUser, id).Error; err != nil {
-		tx.Rollback()
-		return User{}, err
-	}
-
-	updateFields := map[string]any{
-		"nationality_id": user.Nationality,
-		"cst_name":       user.Name,
-		"cst_dob":        user.DOB,
-		"cst_phonenum":   user.Phone,
-		"cst_email":      user.Email,
-	}
-
-	if err := tx.Model(&updatedUser).Where("cst_id = ?", id).Updates(&updateFields).Error; err != nil {
-		tx.Rollback()
-		return User{}, err
-	}
-	if err := tx.Commit().Error; err != nil {
-		return User{}, err
-	}
-	return updatedUser, nil
-}
-
-func (s *UserService) Delete(id int) (User, error) {
-	var user User
-	tx := config.DB.Begin()
-	tx.First(&user, id)
-
-	if err := tx.Delete(&user).Error; err != nil {
-		tx.Rollback()
-		return user, err
-	}
-
-	if err := tx.Commit().Error; err != nil {
-		return user, err
-	}
-
-	return user, nil
-
+	return result, nil
 }
