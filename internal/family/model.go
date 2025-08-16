@@ -1,4 +1,4 @@
-package user
+package family
 
 import (
 	"latihan/common"
@@ -31,11 +31,11 @@ func (User) TableName() string {
 
 type User struct {
 	ID          int             `json:"cst_id" gorm:"primaryKey;column:cst_id"`
-	Nationality int             `json:"nationality_id" gorm:"column:nationality_id"`
-	Name        string          `json:"name" gorm:"column:cst_name"`
-	DOB         common.DateOnly `json:"dob" gorm:"type:date;column:cst_dob"`
-	Phone       string          `json:"phone" gorm:"column:cst_phonenum"`
-	Email       string          `json:"email" gorm:"column:cst_email"`
+	Nationality Nationality     `json:"nationality_id" validate:"required" gorm:"column:nationality_id"`
+	Name        string          `json:"name" validate:"required" gorm:"column:cst_name"`
+	DOB         common.DateOnly `json:"dob" validate:"required" gorm:"type:date;column:cst_dob"`
+	Phone       string          `json:"phone" validate:"required" gorm:"column:cst_phonenum"`
+	Email       string          `json:"email" validate:"required" gorm:"column:cst_email"`
 	CreatedAt   time.Time       `json:"created_at" gorm:"autoCreateTime"`
 	UpdatedAt   time.Time       `json:"updated_at" gorm:"autoUpdateTime"`
 

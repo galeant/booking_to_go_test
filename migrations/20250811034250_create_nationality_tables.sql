@@ -1,11 +1,11 @@
 -- +goose Up
 -- +goose StatementBegin
 CREATE TABLE nationality (
-    id SERIAL PRIMARY KEY,
+    nationality_id SERIAL PRIMARY KEY,
     nationality_name VARCHAR(50) NOT NULL,
+    nationality_code VARCHAR(2) NOT NULL,
     created_at TIMESTAMP NOT NULL,
-    updated_at TIMESTAMP NOT NULL,
-    deleted_at TIMESTAMP NULL
+    updated_at TIMESTAMP NOT NULL
 );
 -- +goose StatementEnd
 

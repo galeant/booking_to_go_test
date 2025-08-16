@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"latihan/config"
-	"latihan/internal/user"
 	"latihan/routes"
 	"log"
 	"net/http"
@@ -25,9 +24,7 @@ func main() {
 	// Load DB
 	config.ConnectDB()
 	// Validation register
-	Validate = validator.New()
-	Validate.RegisterValidation("relation", user.RelationTypeValidator)
-	// Rout
+	// Route
 	r := mux.NewRouter()
 	routes.RegisterRoutes(r)
 	// List

@@ -1,4 +1,4 @@
-package user
+package nationality
 
 import (
 	"encoding/json"
@@ -32,14 +32,14 @@ func (h *UserHandler) GetUsers(w http.ResponseWriter, r *http.Request) {
 		page = val
 	}
 
-	users, _, err := h.Service.GetData(search, paginate, page)
+	users, total, err := h.Service.GetData(search, paginate, page)
 	if err != nil {
 		common.ErrorResponseMux(w, err, "Error Get Data", 500)
 		return
 	}
 	common.SuccessResponseMux(w, map[string]any{
-		"users": users,
-		// "total_data": total,
+		"users":      users,
+		"total_data": total,
 	}, "", 200)
 }
 
@@ -63,24 +63,24 @@ func (h *UserHandler) GetDetail(w http.ResponseWriter, r *http.Request) {
 
 func (h *UserHandler) CreateHandler(w http.ResponseWriter, r *http.Request) {
 	validate.RegisterValidation("relation", RelationValidation)
-	var request UserCreateRequest
+	var user User
 
-	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
 		common.ErrorResponseMux(w, err, "Invalid request", 422)
 		return
 	}
 
-	if err := validate.Struct(request); err != nil {
+	if err := validate.Struct(user); err != nil {
 		common.ErrorValidationMux(w, err)
 		return
 	}
 
-	user, err := h.Service.Create(request)
+	err := h.Service.Create(user)
 	if err != nil {
 		common.ErrorResponseMux(w, err, "Error Create Data", 500)
 		return
 	}
-	common.SuccessResponseMux(w, user, "Success Create", 200)
+	common.SuccessResponseMux(w, nil, "Success Create", 200)
 }
 
 func (h *UserHandler) UpdateHandler(w http.ResponseWriter, r *http.Request) {
@@ -92,18 +92,18 @@ func (h *UserHandler) UpdateHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var request UserCreateRequest
+	var user User
 	validate.RegisterValidation("relation", RelationValidation)
 
-	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
 		common.ErrorResponseMux(w, err, "Invalid request", 422)
 		return
 	}
-	if err := validate.Struct(request); err != nil {
+	if err := validate.Struct(user); err != nil {
 		common.ErrorValidationMux(w, err)
 		return
 	}
-	user, errDB := h.Service.Update(idInt, request)
+	user, errDB := h.Service.Update(idInt, user)
 	if errDB != nil {
 		common.ErrorResponseMux(w, errDB, "Error Get Detail", 500)
 		return

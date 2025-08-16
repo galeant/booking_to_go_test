@@ -8,8 +8,11 @@ CREATE TABLE family_list (
     fl_dob VARCHAR(50) NOT NULL,
     created_at TIMESTAMP NOT NULL,
     updated_at TIMESTAMP NOT NULL,
-    deleted_at TIMESTAMP NULL,
-    CONSTRAINT fk_family_list_user FOREIGN KEY (cst_id) REFERENCES users(cst_id)
+    CONSTRAINT fk_family_list_user 
+        FOREIGN KEY (cst_id) 
+        REFERENCES customer(cst_id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
 );
 -- +goose StatementEnd
 

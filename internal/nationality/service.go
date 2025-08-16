@@ -1,4 +1,4 @@
-package user
+package nationality
 
 import (
 	"latihan/config"
@@ -9,7 +9,7 @@ type UserService struct {
 
 func (s *UserService) GetData(search string, paginate, page int) ([]User, int, error) {
 	var users []User
-	// var total int64
+	var total int64
 	query := config.DB.Model(&User{})
 
 	if search != "" {
@@ -17,15 +17,15 @@ func (s *UserService) GetData(search string, paginate, page int) ([]User, int, e
 			Where("cst_name LIKE ? OR cst_email LIKE ? OR cst_phone ?", "%"+search+"%", "%"+search+"%", "%"+search+"%")
 	}
 
-	// query.Count(&total)
+	query.Count(&total)
 	err := query.
-		// Offset((page - 1) * paginate).
-		// Limit(paginate).
+		Offset((page - 1) * paginate).
+		Limit(paginate).
 		Find(&users).Error
 
-	// totalPages := (int(total) + paginate - 1) / paginate
+	totalPages := (int(total) + paginate - 1) / paginate
 
-	return users, 0, err
+	return users, totalPages, err
 }
 func (s *UserService) GetDetail(id int) (User, error) {
 	var user User
@@ -38,60 +38,51 @@ func (s *UserService) GetDetail(id int) (User, error) {
 	return user, nil
 }
 
-func (s *UserService) Create(request UserCreateRequest) (User, error) {
+func (s *UserService) Create(user User) error {
 	tx := config.DB.Begin()
 	if tx.Error != nil {
-		return User{}, tx.Error
-	}
-
-	user := User{
-		Nationality: request.NationalityId,
-		Name:        request.Name,
-		DOB:         request.DOB,
-		Phone:       request.Phone,
-		Email:       request.Email,
+		return tx.Error
 	}
 
 	if err := tx.Create(&user).Error; err != nil {
 		tx.Rollback() // rollback jika error
-		return User{}, err
+		return err
 	}
 
 	if err := tx.Commit().Error; err != nil {
-		return User{}, err
+		return err
 	}
-	return user, nil
+	return nil
 }
 
-func (s *UserService) Update(id int, request UserCreateRequest) (User, error) {
-	var user User
+func (s *UserService) Update(id int, user User) (User, error) {
+	var updatedUser User
 	tx := config.DB.Begin()
 	if tx.Error != nil {
 		return User{}, tx.Error
 	}
 
-	if err := tx.First(&user, id).Error; err != nil {
+	if err := tx.First(&updatedUser, id).Error; err != nil {
 		tx.Rollback()
 		return User{}, err
 	}
 
-	user = User{
-		ID:          user.ID,
-		Nationality: request.NationalityId,
-		Name:        request.Name,
-		DOB:         request.DOB,
-		Phone:       request.Phone,
-		Email:       request.Email,
+	updateFields := map[string]any{
+		"nationality_id": user.Nationality,
+		"cst_name":       user.Name,
+		"cst_dob":        user.DOB,
+		"cst_phonenum":   user.Phone,
+		"cst_email":      user.Email,
 	}
 
-	if err := tx.Save(&user).Error; err != nil {
+	if err := tx.Model(&updatedUser).Where("cst_id = ?", id).Updates(&updateFields).Error; err != nil {
 		tx.Rollback()
 		return User{}, err
 	}
 	if err := tx.Commit().Error; err != nil {
 		return User{}, err
 	}
-	return user, nil
+	return updatedUser, nil
 }
 
 func (s *UserService) Delete(id int) (User, error) {

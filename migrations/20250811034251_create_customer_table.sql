@@ -9,8 +9,11 @@ CREATE TABLE customer (
     cst_email VARCHAR(50) NOT NULL,
     created_at TIMESTAMP NOT NULL,
     updated_at TIMESTAMP NOT NULL,
-    deleted_at TIMESTAMP NULL,
-    CONSTRAINT fk_user_nationality FOREIGN KEY (nationality_id) REFERENCES users(cst_id)
+    CONSTRAINT fk_user_nationality 
+        FOREIGN KEY (nationality_id) 
+        REFERENCES nationality(nationality_id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
 );
 -- +goose StatementEnd
 

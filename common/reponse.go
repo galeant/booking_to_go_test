@@ -28,7 +28,6 @@ func SuccessResponse(c *gin.Context, data any) {
 func ErrorValidation(c *gin.Context, err error) {
 	var ve validator.ValidationErrors
 	if errors.As(err, &ve) {
-		// ambil semua pesan error
 		out := make([]string, len(ve))
 		for i, fe := range ve {
 			out[i] = fieldErrorToString(fe)
@@ -37,7 +36,6 @@ func ErrorValidation(c *gin.Context, err error) {
 		return
 	}
 
-	// kalau error lain (bukan validation)
 	c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 }
 
@@ -80,12 +78,16 @@ func pathValidationSanitize(path string) string {
 	return path
 }
 
-func SuccessResponseMux(w http.ResponseWriter, data any, reponseCode int) {
+func SuccessResponseMux(w http.ResponseWriter, data any, message string, reponseCode int) {
+
+	if message == "" {
+		message = "Success"
+	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(reponseCode)
 	json.NewEncoder(w).Encode(map[string]any{
 		"data":    data,
-		"message": "Success",
+		"message": message,
 		"errors":  nil,
 	})
 }
