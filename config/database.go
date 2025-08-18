@@ -9,9 +9,7 @@ import (
 	"gorm.io/gorm"
 )
 
-var DB *gorm.DB
-
-func ConnectDB() {
+func ConnectDB() *gorm.DB {
 	host := os.Getenv("DB_HOST")
 	port := os.Getenv("DB_POST")
 	user := os.Getenv("DB_USERNAME")
@@ -22,12 +20,12 @@ func ConnectDB() {
 		"host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=Asia/Jakarta",
 		host, user, password, dbname, port,
 	)
-	
+
 	db, err := gorm.Open(postgres.Open(str), &gorm.Config{})
 	if err != nil {
 		log.Fatal("Gagal koneksi ke database:", err)
 	}
-
-	DB = db
 	fmt.Println("Berhasil konek DB")
+	return db
+
 }

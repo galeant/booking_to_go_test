@@ -2,7 +2,6 @@ package family
 
 import (
 	"errors"
-	"latihan/config"
 	"latihan/internal/user"
 
 	"gorm.io/gorm"
@@ -10,18 +9,19 @@ import (
 )
 
 type FamilyService struct {
+	DB *gorm.DB
 }
 
 func (s *FamilyService) GetData(userId int) ([]UserFamily, error) {
 	var families []UserFamily
 	var user user.User
 
-	selectedUser := config.DB.Where("cst_id = ?", userId).First(&user)
+	selectedUser := s.DB.Where("cst_id = ?", userId).First(&user)
 	if err := selectedUser.Error; err != nil {
 		return nil, errors.New("user not found")
 	}
 
-	err := config.DB.Model(&UserFamily{}).
+	err := s.DB.Model(&UserFamily{}).
 		Where("cst_id = ?", userId).
 		Find(&families).Error
 
@@ -30,13 +30,13 @@ func (s *FamilyService) GetData(userId int) ([]UserFamily, error) {
 
 func (s *FamilyService) Update(userId int, request CreateFamilyRequest) ([]UserFamily, error) {
 	var user user.User
-	selectedUser := config.DB.Where("cst_id = ?", userId).First(&user)
+	selectedUser := s.DB.Where("cst_id = ?", userId).First(&user)
 	if err := selectedUser.Error; err != nil {
 		return nil, errors.New("user not found")
 	}
 
 	var result []UserFamily
-	err := config.DB.Transaction(func(tx *gorm.DB) error {
+	err := s.DB.Transaction(func(tx *gorm.DB) error {
 		var insert []UserFamily
 		ids := make([]int, 0)
 		for _, f := range request.Families {

@@ -22,11 +22,11 @@ func main() {
 		log.Fatal("Gagal memuat file .env")
 	}
 	// Load DB
-	config.ConnectDB()
+	db := config.ConnectDB()
 	// Validation register
 	// Route
 	r := mux.NewRouter()
-	routes.RegisterRoutes(r)
+	routes.RegisterRoutes(r, db)
 	// List
 	http.ListenAndServe(":8000", r)
 }

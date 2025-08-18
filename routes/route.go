@@ -6,13 +6,14 @@ import (
 	"latihan/internal/user"
 
 	"github.com/gorilla/mux"
+	"gorm.io/gorm"
 )
 
-func RegisterRoutes(r *mux.Router) {
+func RegisterRoutes(r *mux.Router, db *gorm.DB) {
 
-	userHandler := &user.UserHandler{Service: &user.UserService{}}
-	familyHandler := &family.FamilyHandler{Service: &family.FamilyService{}}
-	nationalityHandler := &nationality.NationalityHandler{Service: &nationality.NationalityService{}}
+	userHandler := &user.UserHandler{Service: &user.UserService{DB: db}}
+	familyHandler := &family.FamilyHandler{Service: &family.FamilyService{DB: db}}
+	nationalityHandler := &nationality.NationalityHandler{Service: &nationality.NationalityService{DB: db}}
 
 	// User
 	r.HandleFunc("/user", userHandler.GetUsers).Methods("GET")

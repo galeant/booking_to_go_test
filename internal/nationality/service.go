@@ -2,17 +2,17 @@ package nationality
 
 import (
 	"errors"
-	"latihan/config"
 
 	"gorm.io/gorm"
 )
 
 type NationalityService struct {
+	DB *gorm.DB
 }
 
 func (s *NationalityService) GetList(search string) ([]Nationality, error) {
 	var result []Nationality
-	query := config.DB.Model(&Nationality{})
+	query := s.DB.Model(&Nationality{})
 	if search != "" {
 		search = "%" + search + "%"
 		query = query.
@@ -27,12 +27,12 @@ func (s *NationalityService) GetList(search string) ([]Nationality, error) {
 
 func (s *NationalityService) GetDetail(id int) (Nationality, error) {
 	var result Nationality
-	err := config.DB.First(&result, id).Error
+	err := s.DB.First(&result, id).Error
 	return result, err
 }
 
 func (s *NationalityService) Create(nationality Nationality) (Nationality, error) {
-	err := config.DB.Transaction(func(tx *gorm.DB) error {
+	err := s.DB.Transaction(func(tx *gorm.DB) error {
 		if err := tx.Create(&nationality).Error; err != nil {
 			tx.Rollback()
 			return err
@@ -46,7 +46,7 @@ func (s *NationalityService) Create(nationality Nationality) (Nationality, error
 
 func (s *NationalityService) Update(id int, nationality Nationality) (Nationality, error) {
 	var existing Nationality
-	err := config.DB.Transaction(func(tx *gorm.DB) error {
+	err := s.DB.Transaction(func(tx *gorm.DB) error {
 		if err := tx.First(&existing, id).Error; err != nil {
 			tx.Rollback()
 			return errors.New("data not found")
@@ -69,7 +69,7 @@ func (s *NationalityService) Update(id int, nationality Nationality) (Nationalit
 
 func (s *NationalityService) Delete(id int) (Nationality, error) {
 	var result Nationality
-	err := config.DB.Transaction(func(tx *gorm.DB) error {
+	err := s.DB.Transaction(func(tx *gorm.DB) error {
 		if err := tx.First(&result, id).Error; err != nil {
 			tx.Rollback()
 			return errors.New("data not found")

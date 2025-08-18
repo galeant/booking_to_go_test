@@ -2,17 +2,17 @@ package user
 
 import (
 	"errors"
-	"latihan/config"
 
 	"gorm.io/gorm"
 )
 
 type UserService struct {
+	DB *gorm.DB
 }
 
 func (s *UserService) GetData(search string) ([]User, error) {
 	var users []User
-	query := config.DB.Model(&User{}).Preload("Family")
+	query := s.DB.Model(&User{}).Preload("Family")
 
 	if search != "" {
 		search = "%" + search + "%"
@@ -27,7 +27,7 @@ func (s *UserService) GetData(search string) ([]User, error) {
 }
 func (s *UserService) GetDetail(id int) (User, error) {
 	var user User
-	res := config.DB.Where("cst_id = ?", id).Preload("Family").First(&user)
+	res := s.DB.Where("cst_id = ?", id).Preload("Family").First(&user)
 
 	if res.Error != nil {
 		return User{}, res.Error
@@ -39,7 +39,7 @@ func (s *UserService) GetDetail(id int) (User, error) {
 func (s *UserService) Create(request UserCreateRequest) (User, error) {
 
 	var user User
-	err := config.DB.Transaction(func(tx *gorm.DB) error {
+	err := s.DB.Transaction(func(tx *gorm.DB) error {
 
 		user.Nationality = request.NationalityId
 		user.Name = request.Name
@@ -60,7 +60,7 @@ func (s *UserService) Create(request UserCreateRequest) (User, error) {
 
 func (s *UserService) Update(id int, request UserCreateRequest) (User, error) {
 	var user User
-	err := config.DB.Transaction(func(tx *gorm.DB) error {
+	err := s.DB.Transaction(func(tx *gorm.DB) error {
 		if err := tx.First(&user, id).Error; err != nil {
 			tx.Rollback()
 			return errors.New("user not found")
@@ -85,7 +85,7 @@ func (s *UserService) Update(id int, request UserCreateRequest) (User, error) {
 
 func (s *UserService) Delete(id int) (User, error) {
 	var user User
-	err := config.DB.Transaction(func(tx *gorm.DB) error {
+	err := s.DB.Transaction(func(tx *gorm.DB) error {
 		if err := tx.First(&user, id).Error; err != nil {
 			tx.Rollback()
 			return errors.New("data not found")
