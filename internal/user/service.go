@@ -11,7 +11,7 @@ type UserService struct {
 }
 
 func (s *UserService) GetData(search string) ([]User, error) {
-	var users []User
+	users := []User{}
 	query := s.DB.Model(&User{}).Preload("Family")
 
 	if search != "" {
@@ -26,7 +26,7 @@ func (s *UserService) GetData(search string) ([]User, error) {
 	return users, err
 }
 func (s *UserService) GetDetail(id int) (User, error) {
-	var user User
+	user := User{}
 	res := s.DB.Where("cst_id = ?", id).Preload("Family").First(&user)
 
 	if res.Error != nil {
@@ -38,7 +38,7 @@ func (s *UserService) GetDetail(id int) (User, error) {
 
 func (s *UserService) Create(request UserCreateRequest) (User, error) {
 
-	var user User
+	user := User{}
 	err := s.DB.Transaction(func(tx *gorm.DB) error {
 
 		user.Nationality = request.NationalityId
@@ -59,7 +59,7 @@ func (s *UserService) Create(request UserCreateRequest) (User, error) {
 }
 
 func (s *UserService) Update(id int, request UserCreateRequest) (User, error) {
-	var user User
+	user := User{}
 	err := s.DB.Transaction(func(tx *gorm.DB) error {
 		if err := tx.First(&user, id).Error; err != nil {
 			tx.Rollback()
@@ -84,7 +84,7 @@ func (s *UserService) Update(id int, request UserCreateRequest) (User, error) {
 }
 
 func (s *UserService) Delete(id int) (User, error) {
-	var user User
+	user := User{}
 	err := s.DB.Transaction(func(tx *gorm.DB) error {
 		if err := tx.First(&user, id).Error; err != nil {
 			tx.Rollback()

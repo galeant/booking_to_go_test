@@ -11,10 +11,9 @@ import (
 	"github.com/gorilla/mux"
 )
 
-var validate = validator.New()
-
 type NationalityHandler struct {
-	Service *NationalityService
+	Service   *NationalityService
+	Validator *validator.Validate
 }
 
 func (h *NationalityHandler) GetList(w http.ResponseWriter, r *http.Request) {
@@ -45,13 +44,13 @@ func (h *NationalityHandler) GetDetail(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *NationalityHandler) Create(w http.ResponseWriter, r *http.Request) {
-	var nationality Nationality
+	nationality := Nationality{}
 	if err := json.NewDecoder(r.Body).Decode(&nationality); err != nil {
 		common.ErrorResponseMux(w, err, "Invalid request", 422)
 		return
 	}
 
-	if err := validate.Struct(nationality); err != nil {
+	if err := h.Validator.Struct(nationality); err != nil {
 		common.ErrorValidationMux(w, err)
 		return
 	}
@@ -72,17 +71,17 @@ func (h *NationalityHandler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var nationality Nationality
+	nationality := Nationality{}
 	if err := json.NewDecoder(r.Body).Decode(&nationality); err != nil {
 		common.ErrorResponseMux(w, err, "Invalid request", 422)
 		return
 	}
 
-	if err := validate.Struct(nationality); err != nil {
+	if err := h.Validator.Struct(nationality); err != nil {
 		common.ErrorValidationMux(w, err)
 		return
 	}
-	fmt.Println(nationality)
+
 	nationality, errDB := h.Service.Update(idInt, nationality)
 	if errDB != nil {
 		common.ErrorResponseMux(w, errDB, "Error Get Detail", 500)

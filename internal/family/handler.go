@@ -10,10 +10,9 @@ import (
 	"github.com/gorilla/mux"
 )
 
-var validate = validator.New()
-
 type FamilyHandler struct {
-	Service *FamilyService
+	Service   *FamilyService
+	Validator *validator.Validate
 }
 
 func (h *FamilyHandler) GetList(w http.ResponseWriter, r *http.Request) {
@@ -40,14 +39,14 @@ func (h *FamilyHandler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var request CreateFamilyRequest
-	validate.RegisterValidation("relation", RelationValidation)
+	request := CreateFamilyRequest{}
+	h.Validator.RegisterValidation("relation", RelationValidation)
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
 		common.ErrorResponseMux(w, err, "Invalid request", 422)
 		return
 	}
 
-	if err := validate.Struct(request); err != nil {
+	if err := h.Validator.Struct(request); err != nil {
 		common.ErrorValidationMux(w, err)
 		return
 	}

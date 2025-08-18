@@ -13,8 +13,8 @@ type FamilyService struct {
 }
 
 func (s *FamilyService) GetData(userId int) ([]UserFamily, error) {
-	var families []UserFamily
-	var user user.User
+	families := []UserFamily{}
+	user := user.User{}
 
 	selectedUser := s.DB.Where("cst_id = ?", userId).First(&user)
 	if err := selectedUser.Error; err != nil {
@@ -29,13 +29,13 @@ func (s *FamilyService) GetData(userId int) ([]UserFamily, error) {
 }
 
 func (s *FamilyService) Update(userId int, request CreateFamilyRequest) ([]UserFamily, error) {
-	var user user.User
+	user := user.User{}
 	selectedUser := s.DB.Where("cst_id = ?", userId).First(&user)
 	if err := selectedUser.Error; err != nil {
 		return nil, errors.New("user not found")
 	}
 
-	var result []UserFamily
+	result := []UserFamily{}
 	err := s.DB.Transaction(func(tx *gorm.DB) error {
 		var insert []UserFamily
 		ids := make([]int, 0)

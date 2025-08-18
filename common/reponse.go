@@ -108,3 +108,35 @@ func ErrorResponseMux(w http.ResponseWriter, err error, message string, reponseC
 		"errors":  err.Error(),
 	})
 }
+
+func Reponse(w http.ResponseWriter, data any, err error, message string, responseCode int) {
+	if err != nil {
+		message = "Fatal Error"
+		responseCode = 500
+	}
+
+	var errorMessage any
+	errs := make(map[string]string)
+	if _, ok := err.(validator.ValidationErrors); ok {
+		for _, e := range err.(validator.ValidationErrors) {
+			fielName := pathValidationSanitize(e.StructNamespace())
+			errs[fielName] = fieldErrorToString(e)
+		}
+		message = "Validation Error"
+		responseCode = 422
+	}
+
+	if len(errs) > 0 {
+		errorMessage = errs
+	} else {
+		errorMessage = err
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(responseCode)
+	json.NewEncoder(w).Encode(map[string]any{
+		"data":    data,
+		"message": message,
+		"errors":  errorMessage,
+	})
+}

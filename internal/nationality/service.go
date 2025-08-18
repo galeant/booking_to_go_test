@@ -11,7 +11,7 @@ type NationalityService struct {
 }
 
 func (s *NationalityService) GetList(search string) ([]Nationality, error) {
-	var result []Nationality
+	result := []Nationality{}
 	query := s.DB.Model(&Nationality{})
 	if search != "" {
 		search = "%" + search + "%"
@@ -26,7 +26,7 @@ func (s *NationalityService) GetList(search string) ([]Nationality, error) {
 }
 
 func (s *NationalityService) GetDetail(id int) (Nationality, error) {
-	var result Nationality
+	result := Nationality{}
 	err := s.DB.First(&result, id).Error
 	return result, err
 }
@@ -45,7 +45,7 @@ func (s *NationalityService) Create(nationality Nationality) (Nationality, error
 }
 
 func (s *NationalityService) Update(id int, nationality Nationality) (Nationality, error) {
-	var existing Nationality
+	existing := Nationality{}
 	err := s.DB.Transaction(func(tx *gorm.DB) error {
 		if err := tx.First(&existing, id).Error; err != nil {
 			tx.Rollback()
@@ -68,7 +68,7 @@ func (s *NationalityService) Update(id int, nationality Nationality) (Nationalit
 }
 
 func (s *NationalityService) Delete(id int) (Nationality, error) {
-	var result Nationality
+	result := Nationality{}
 	err := s.DB.Transaction(func(tx *gorm.DB) error {
 		if err := tx.First(&result, id).Error; err != nil {
 			tx.Rollback()

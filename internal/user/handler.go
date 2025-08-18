@@ -11,10 +11,9 @@ import (
 	"github.com/gorilla/mux"
 )
 
-var validate = validator.New()
-
 type UserHandler struct {
-	Service *UserService
+	Service   *UserService
+	Validator *validator.Validate
 }
 
 func (h *UserHandler) GetUsers(w http.ResponseWriter, r *http.Request) {
@@ -58,14 +57,14 @@ func (h *UserHandler) GetDetail(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *UserHandler) CreateHandler(w http.ResponseWriter, r *http.Request) {
-	var request UserCreateRequest
+	request := UserCreateRequest{}
 
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
 		common.ErrorResponseMux(w, err, "Invalid request", 422)
 		return
 	}
 
-	if err := validate.Struct(request); err != nil {
+	if err := h.Validator.Struct(request); err != nil {
 		common.ErrorValidationMux(w, err)
 		return
 	}
@@ -85,13 +84,13 @@ func (h *UserHandler) UpdateHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var request UserCreateRequest
+	request := UserCreateRequest{}
 
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
 		common.ErrorResponseMux(w, err, "Invalid request", 422)
 		return
 	}
-	if err := validate.Struct(request); err != nil {
+	if err := h.Validator.Struct(request); err != nil {
 		common.ErrorValidationMux(w, err)
 		return
 	}

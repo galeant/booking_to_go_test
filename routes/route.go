@@ -5,15 +5,30 @@ import (
 	"latihan/internal/nationality"
 	"latihan/internal/user"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/mux"
 	"gorm.io/gorm"
 )
 
 func RegisterRoutes(r *mux.Router, db *gorm.DB) {
 
-	userHandler := &user.UserHandler{Service: &user.UserService{DB: db}}
-	familyHandler := &family.FamilyHandler{Service: &family.FamilyService{DB: db}}
-	nationalityHandler := &nationality.NationalityHandler{Service: &nationality.NationalityService{DB: db}}
+	validator := validator.New()
+	validator.RegisterValidation("relation", family.RelationValidation)
+
+	userHandler := &user.UserHandler{
+		Service:   &user.UserService{DB: db},
+		Validator: validator,
+	}
+
+	familyHandler := &family.FamilyHandler{
+		Service:   &family.FamilyService{DB: db},
+		Validator: validator,
+	}
+
+	nationalityHandler := &nationality.NationalityHandler{
+		Service:   &nationality.NationalityService{DB: db},
+		Validator: validator,
+	}
 
 	// User
 	r.HandleFunc("/user", userHandler.GetUsers).Methods("GET")
